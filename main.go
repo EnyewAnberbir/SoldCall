@@ -12,6 +12,10 @@ func main() {
 		log.Fatal("Failed to connect to MongoDB:", err)
 	}
 
+	if data.UserCollection == nil {
+		log.Fatal("UserCollection is nil")
+	}
+
 	// Initialize router
 	r := router.InitRouter()
 
