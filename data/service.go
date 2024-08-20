@@ -12,37 +12,35 @@ import (
 )
 
 var (
-	client     *mongo.Client
-	Collection *mongo.Collection
+	client          *mongo.Client
+	UserCollection  *mongo.Collection
+	EmojiCollection *mongo.Collection
 )
 
 func InitMongoDB() error {
-	//var err error
 	err := godotenv.Load()
     if err != nil {
         log.Fatalf("Error loading .env file")
     }
 
-    // Get the MongoDB URI from the environment variables
     mongoURI := os.Getenv("MONGODB_URI")
     if mongoURI == "" {
         log.Fatalf("MONGODB_URI not set in environment variables")
     }
 
-    // Set client options and connect to the MongoDB server
     clientOptions := options.Client().ApplyURI(mongoURI)
 	client, err = mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		return err
 	}
 
-	// Check the connection
 	err = client.Ping(context.TODO(), readpref.Primary())
 	if err != nil {
 		return err
 	}
 
 	fmt.Println("Connected to MongoDB!")
-	Collection = client.Database("testdb").Collection("users")
+	UserCollection = client.Database("testdb").Collection("users")
+	EmojiCollection = client.Database("testdb").Collection("emojis")
 	return nil
 }

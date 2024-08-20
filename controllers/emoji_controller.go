@@ -8,14 +8,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo" 
+	"go.mongodb.org/mongo-driver/mongo"
 	"usermanagement/data"
 	"usermanagement/models"
 )
 
-func GetUsers(c *gin.Context) {
-	var users []models.User
-	cur, err := data.UserCollection.Find(context.TODO(), bson.D{})
+func GetEmojis(c *gin.Context) {
+	var emojis []models.Emoji
+	cur, err := data.EmojiCollection.Find(context.TODO(), bson.D{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
@@ -27,8 +27,8 @@ func GetUsers(c *gin.Context) {
 	defer cur.Close(context.TODO())
 
 	for cur.Next(context.TODO()) {
-		var user models.User
-		err := cur.Decode(&user)
+		var emoji models.Emoji
+		err := cur.Decode(&emoji)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"status":  http.StatusInternalServerError,
@@ -37,7 +37,7 @@ func GetUsers(c *gin.Context) {
 			})
 			return
 		}
-		users = append(users, user)
+		emojis = append(emojis, emoji)
 	}
 
 	if err := cur.Err(); err != nil {
@@ -52,14 +52,14 @@ func GetUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  http.StatusOK,
 		"message": "success",
-		"data":    users,
+		"data":    emojis,
 	})
 }
 
-func PostUser(c *gin.Context) {
-	var newUser models.User
+func PostEmoji(c *gin.Context) {
+	var newEmoji models.Emoji
 
-	if err := c.ShouldBindJSON(&newUser); err != nil {
+	if err := c.ShouldBindJSON(&newEmoji); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": err.Error(),
@@ -68,27 +68,26 @@ func PostUser(c *gin.Context) {
 		return
 	}
 
-	newUser.ID = primitive.NewObjectID()
-	newUser.CreatedDate = time.Now()
-	newUser.UpdatedDate = time.Now()
+	newEmoji.ID = primitive.NewObjectID()
+	newEmoji.Created_Date = time.Now()
 
-	if _, err := data.UserCollection.InsertOne(context.TODO(), newUser); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{ // Corrected status
+	if _, err := data.EmojiCollection.InsertOne(context.TODO(), newEmoji); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": err.Error(),
 			"data":    map[string]interface{}{},
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusCreated, gin.H{
 		"status":  http.StatusCreated,
-		"message": "User created",
-		"data":    newUser,
+		"message": "Emoji created",
+		"data":    newEmoji,
 	})
 }
 
-func GetUsersByID(c *gin.Context) {
+func GetEmojiByID(c *gin.Context) {
     id := c.Param("id")
     objID, err := primitive.ObjectIDFromHex(id)
     if err != nil {
@@ -100,12 +99,12 @@ func GetUsersByID(c *gin.Context) {
         return
     }
 
-    var user models.User
-    err = data.UserCollection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&user)
+    var emoji models.Emoji
+    err = data.EmojiCollection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&emoji)
     if err == mongo.ErrNoDocuments {
         c.JSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
-			"message": "User not found",
+			"message": "Emoji not found",
 			"data":    map[string]interface{}{},
 		})
         return
@@ -121,12 +120,11 @@ func GetUsersByID(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{
 		"status":  http.StatusOK,
 		"message": "success",
-		"data":    user,
+		"data":    emoji,
 	})
 }
 
-
-func RemoveUser(c *gin.Context) {
+func RemoveEmoji(c *gin.Context) {
 	id := c.Param("id")
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -138,7 +136,7 @@ func RemoveUser(c *gin.Context) {
 		return
 	}
 
-	res, err := data.UserCollection.DeleteOne(context.TODO(), bson.M{"_id": objID})
+	res, err := data.EmojiCollection.DeleteOne(context.TODO(), bson.M{"_id": objID})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
@@ -151,7 +149,7 @@ func RemoveUser(c *gin.Context) {
 	if res.DeletedCount == 0 {
 		c.JSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
-			"message": "User not found",
+			"message": "Emoji not found",
 			"data":    map[string]interface{}{},
 		})
 		return
@@ -159,13 +157,12 @@ func RemoveUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":  http.StatusOK,
-		"message": "User removed",
+		"message": "Emoji removed",
 		"data":    map[string]interface{}{},
-
 	})
 }
 
-func UpdateUser(c *gin.Context) {
+func UpdateEmoji(c *gin.Context) {
     id := c.Param("id")
     objID, err := primitive.ObjectIDFromHex(id)
     if err != nil {
@@ -177,8 +174,8 @@ func UpdateUser(c *gin.Context) {
         return
     }
 
-    var updatedUser models.User
-    if err := c.ShouldBindJSON(&updatedUser); err != nil {
+    var updatedEmoji models.Emoji
+    if err := c.ShouldBindJSON(&updatedEmoji); err != nil {
         c.JSON(http.StatusBadRequest, gin.H{
             "status":  http.StatusBadRequest,
             "message": err.Error(),
@@ -187,13 +184,13 @@ func UpdateUser(c *gin.Context) {
         return
     }
 
-    // Fetch the existing user to retain fields that are not being updated
-    var existingUser models.User
-    err = data.UserCollection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&existingUser)
+    // Fetch the existing emoji to retain fields that are not being updated
+    var existingEmoji models.Emoji
+    err = data.EmojiCollection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&existingEmoji)
     if err == mongo.ErrNoDocuments {
         c.JSON(http.StatusNotFound, gin.H{
             "status":  http.StatusNotFound,
-            "message": "User not found",
+            "message": "Emoji not found",
             "data":    map[string]interface{}{},
         })
         return
@@ -207,19 +204,22 @@ func UpdateUser(c *gin.Context) {
     }
 
     // Update only the fields provided, keeping other fields unchanged
-    if updatedUser.Name != "" {
-        existingUser.Name = updatedUser.Name
+    if updatedEmoji.Emoji != "" {
+        existingEmoji.Emoji = updatedEmoji.Emoji
     }
-    if updatedUser.Color_Code != "" {
-        existingUser.Color_Code = updatedUser.Color_Code
+    if updatedEmoji.Emoji_Name != "" {
+        existingEmoji.Emoji_Name = updatedEmoji.Emoji_Name
     }
-    existingUser.UpdatedDate = time.Now()
+    if updatedEmoji.Emoji_Index != 0 {
+        existingEmoji.Emoji_Index = updatedEmoji.Emoji_Index
+    }
+    existingEmoji.Created_Date = updatedEmoji.Created_Date // or keep it unchanged if needed
 
     update := bson.M{
-        "$set": existingUser,
+        "$set": existingEmoji,
     }
 
-    res, err := data.UserCollection.UpdateOne(context.TODO(), bson.M{"_id": objID}, update)
+    res, err := data.EmojiCollection.UpdateOne(context.TODO(), bson.M{"_id": objID}, update)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{
             "status":  http.StatusInternalServerError,
@@ -232,16 +232,16 @@ func UpdateUser(c *gin.Context) {
     if res.MatchedCount == 0 {
         c.JSON(http.StatusNotFound, gin.H{
             "status":  http.StatusNotFound,
-            "message": "User not found",
+            "message": "Emoji not found",
             "data":    map[string]interface{}{},
         })
         return
     }
 
-    // Return the updated user data
+    // Return the updated emoji data
     c.JSON(http.StatusOK, gin.H{
         "status":  http.StatusOK,
-        "message": "User updated",
-        "data":    existingUser, 
+        "message": "Emoji updated",
+        "data":    existingEmoji,
     })
 }
