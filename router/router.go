@@ -21,5 +21,19 @@ func InitRouter() *gin.Engine {
 	r.DELETE("/emojis/:id", controllers.RemoveEmoji)
 	r.PUT("/emojis/:id", controllers.UpdateEmoji)
 
+	// Contact routes
+	r.GET("/contacts", controllers.GetContacts)
+	r.POST("/contacts", controllers.PostContact)
+	r.GET("/contacts/:id", controllers.GetContactByID)
+	r.PUT("/contacts/:id", controllers.UpdateContact)
+	r.DELETE("/contacts/:id", controllers.RemoveContact)
+
+	// Business routes
+	r.GET("/businesses", controllers.GetBusinesses)
+	r.POST("/businesses", controllers.PostBusiness)
+	r.GET("/businesses/:id", controllers.GetBusinessByID)
+	r.PUT("/businesses/:id", controllers. UpdateBusiness)
+	r.DELETE("/businesses/:id", controllers.RemoveBusiness)
+
 	return r
 }

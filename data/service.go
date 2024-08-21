@@ -15,6 +15,8 @@ var (
 	client          *mongo.Client
 	UserCollection  *mongo.Collection
 	EmojiCollection *mongo.Collection
+	ContactCollection *mongo.Collection
+	BusinessCollection *mongo.Collection
 )
 
 func InitMongoDB() error {
@@ -42,5 +44,8 @@ func InitMongoDB() error {
 	fmt.Println("Connected to MongoDB!")
 	UserCollection = client.Database("testdb").Collection("users")
 	EmojiCollection = client.Database("testdb").Collection("emojis")
+	ContactCollection = client.Database("testdb").Collection("contacts")
+	BusinessCollection = client.Database("testdb").Collection("businesses")
+	
 	return nil
 }
