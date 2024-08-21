@@ -70,7 +70,16 @@ func PostEmoji(c *gin.Context) {
 
 	newEmoji.ID = primitive.NewObjectID()
 	newEmoji.Created_Date = time.Now()
-
+    count, err := data.EmojiCollection.CountDocuments(context.TODO(), bson.D{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": err.Error(),
+			"data":    map[string]interface{}{},
+		})
+		return
+	}
+	newEmoji.Emoji_Index = int(count) + 1
 	if _, err := data.EmojiCollection.InsertOne(context.TODO(), newEmoji); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
@@ -80,8 +89,8 @@ func PostEmoji(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"status":  http.StatusCreated,
+	c.JSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
 		"message": "Emoji created",
 		"data":    newEmoji,
 	})
